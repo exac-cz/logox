@@ -1,5 +1,6 @@
 package info.exac.logox;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.cli.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,17 +12,14 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.util.Arrays;
 
 @SpringBootApplication
-public class Main implements CommandLineRunner {
-
-    private static final Logger logger = LoggerFactory.getLogger(Main.class);
-
+@Slf4j
+public class CliApplication implements CommandLineRunner {
 
 
     public static void main(String[] args) {
-        SpringApplication.run(Main.class, args);
+        SpringApplication.run(CliApplication.class, args);
     }
 
 
@@ -34,21 +32,24 @@ public class Main implements CommandLineRunner {
         graphics2D.drawRect(100, 100, 200, 200);
         ImageIO.write(bufferedImage, "png", new File("output.png"));
 
-
         Options options = new Options();
-        options.addOption(new Option("i", "input", true, "Input LGX file"));
-        options.addOption(new Option("o", "output", true, "Output PNG file"));
+        Option inputOption = new Option("i", "input", true, "Input LGX file");
+        inputOption.setArgName("INPUT_FILE");
+        inputOption.setRequired(true);
+        options.addOption(inputOption);
+        Option outputOption = new Option("o", "output", true, "Output PNG file");
+        outputOption.setArgName("OUTPUT_FILE");
+        options.addOption(outputOption);
+        options.addOption("h", "help", false, "Prints this help");
 
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = parser.parse(options, args);
 
-        logger.info(cmd.getOptionValue("input"));
-        logger.info(cmd.getOptionValue("output"));
-
-        HelpFormatter formatter = new HelpFormatter();
-        formatter.printHelp("logox", options, true);
-
-        Arrays.stream(args).forEach(logger::info);
+        if (cmd.hasOption("help") || cmd.getOptions().length == 0) {
+            HelpFormatter formatter = new HelpFormatter();
+            formatter.printHelp("logox", options, true);
+            System.exit(0);
+        }
     }
 
 }
